@@ -3,7 +3,7 @@
 #include "instruction.h"
 
 
-int emulate(arcade_t *arcade);
+int emulate(arcade_t *arcade, uint16_t *breakpoints);
 void execute_ins(arcade_t *arcade, struct ins *instruction);
 
 void execute_NOP(arcade_t *a, struct ins *i);

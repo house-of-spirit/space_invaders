@@ -1,25 +1,136 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <ctype.h>
 
 #include "emulator.h"
 #include "instruction.h"
 
-int emulate(arcade_t *a)
+int emulate(arcade_t *a, uint16_t *breakpoints)
 {
+    static bool should_break = false;
+
     char instruction_str[20];
+    char context_buf[2048] = {};
+    char query[256] = {0};
+    
+    size_t bp_length = 0;
+    while(breakpoints[++bp_length] != 0xffff);
+
     while(true)
     {
+
         ins_t instruction = {};
         uint8_t *ins_bytecode = &a->mem->mem[a->PC];
     
         parse_ins(&instruction, ins_bytecode);
         
         ins_to_str(instruction_str, &instruction);
-        printf("%s\n", instruction_str);    
+        arcade_context(a, context_buf);
+        
+        print_context:
+        printf("%s\n", context_buf);
+        
+        if(should_break)
+        {
+            should_break = false;
+            goto breakpoint_trigger;
+        }
+
+        for(int i = 0; i < bp_length; ++i)
+        {
+            if(a->PC == breakpoints[i])
+            {
+
+                breakpoint_trigger:
+                printf("Breakpoints: ");
+                
+                for(int j = 0; j < bp_length; ++j)
+                    printf("%04x ", breakpoints[j]);
+                printf("\n");
+                
+                printf("> ");
+                fgets(query, 256, stdin);
+
+                if(query[0] == 'n')
+                {
+                    should_break = true;
+                }
+                else if(query[0] == 'e')
+                {
+                    return 0;
+                }
+                else if(query[0] == 'b' && isspace(query[1]))
+                {
+                    uint16_t address = strtoll(&query[2], NULL, 16);
+
+                    breakpoints = realloc(breakpoints, (bp_length + 2) * sizeof (uint16_t));
+                    breakpoints[bp_length] = address;
+                    breakpoints[++bp_length] = 0xffff;
+                    i--;
+                    goto print_context;
+                }
+                else if(query[0] == 'd' && isspace(query[1]))
+                {
+                    uint16_t address = strtoll(&query[2], NULL, 16);
+                    for(int j = 0; j < bp_length; ++j)
+                    {
+                        if(breakpoints[j] == address)
+                        {
+                            
+                            for(int k = j; k < bp_length; ++k)
+                            {
+                                breakpoints[k] = breakpoints[k+1];
+                            }
+
+                            breakpoints = realloc(breakpoints, bp_length-- * sizeof (uint16_t) );
+                        }
+                    }
+                    i--;
+                    goto print_context;
+
+                }
+                else if(query[0] == 'x' && isspace(query[1]))
+                {
+                    char *next;
+                    uint16_t address = strtoll(&query[2], &next, 16);
+                    size_t amount = strtoll(next, NULL, 10);
+                    amount = amount == 0 ? 32 : amount;
+                    if(amount > 0x1000)
+                    {
+                        i--;
+                        goto print_context;
+                    }
+                    printf("\n");
+                    for(int j = 0; j <= amount / 8; ++j)
+                    {
+                        if(j*8 == amount) break;
+                        printf("%04x: ", address+j*8);
+                        for(int k = address+j*8; k < address+(j+1)*8 && k < address + amount; k++)
+                        {
+                            printf("%02x ", a->mem->mem[k]);
+                        }
+                        printf("\n");
+
+                    }
+                    printf("\n");
+                    i--;
+                    goto print_context;
+                }
+                break;
+
+            }
+        }
+
         instruction.ins_func(a, &instruction);
         
         a->PC += instruction.bytecode_size; 
+
+        //usleep(1000 * 200);
     }
+
+
     return 0;
 }
 
