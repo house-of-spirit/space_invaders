@@ -50,6 +50,7 @@ typedef struct ins {
     size_t bytecode_size;
     uint8_t bytecode[3];
     void (*ins_func)(arcade_t *a, struct ins *t);
+    size_t cycle_count;
 } ins_t;
 
 

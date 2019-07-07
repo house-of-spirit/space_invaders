@@ -83,6 +83,15 @@ int main(int argc, char **argv)
     rom_add_file("roms/invaders.e", &rom);
     
 
+    uint8_t bytecode[] = 
+    {
+        0x01, 0x80, 0x80,  // LXI B, 8080
+        0x31, 0x00, 0x24,  // LXI SP, dead
+        0xc5,              // PUSH B
+    };
+
+    //rom_add_mem(bytecode, sizeof bytecode, &rom);
+
     if(!strcmp(argv[1], "--disassemble") )
     {
        ins_t **instructions = parse_n_bytecode(rom.contents, rom.size);
@@ -115,7 +124,7 @@ int main(int argc, char **argv)
         }
         breakpoints[argc - 2] = 0xffff;
 
-        emulate(&arcade, breakpoints);
+        emulate(&arcade, breakpoints, true);
         free(breakpoints);
         free(arcade.mem);
         

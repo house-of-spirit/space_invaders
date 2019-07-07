@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 #include "register.h"
-
+#include "stdbool.h"
 
 #pragma pack(1)
 typedef struct arcade_mem {
@@ -82,6 +82,9 @@ typedef struct arcade {
     uint16_t SP;
 
     arcade_mem_t *mem;
+    bool interrupt_enabled;
+
+    size_t cycles_passed;
 
 } arcade_t;
 
