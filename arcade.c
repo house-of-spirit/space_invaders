@@ -45,7 +45,8 @@ void arcade_context(arcade_t *arcade, char *buf)
     offset += sprintf(result+offset, "\n\n");
     offset += sprintf(result+offset, REG_STR(SP, 4));
     offset += sprintf(result+offset, REG_STR(PC, 4));
-    offset += sprintf(result+offset, ASCII_GREEN "FLAGS" ASCII_STOP ": " ASCII_RED "%s%s%s%s" ASCII_STOP "\n", FLAG(C), FLAG(S), FLAG(P), FLAG(Z)); 
+    offset += sprintf(result+offset, ASCII_GREEN "FLAGS" ASCII_STOP ": " ASCII_RED "%s%s%s%s" ASCII_STOP "\n", FLAG(C), FLAG(S), FLAG(P), FLAG(Z));
+    offset += sprintf(result+offset, ASCII_GREEN "INTERRUPTS" ASCII_STOP ": " ASCII_RED "%s" ASCII_STOP "\n", arcade->interrupt_enabled ? "true" : "false"); 
     memset(result+offset, '-', 30);
     offset += 30;
     offset += sprintf(result+offset, " " ASCII_BOLD ASCII_MAGENTA "DISASSEMBLY" ASCII_STOP "\n");

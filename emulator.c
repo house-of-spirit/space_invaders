@@ -19,13 +19,10 @@ int emulate(arcade_t *a, uint16_t *breakpoints, bool context)
     
     struct timespec ts;
     uint64_t ms1;
-
-    int cnt = 0;
     size_t bp_length = 0;
 
     timespec_get(&ts, TIME_UTC);
     ms1 = TO_USEC(ts);
-
 
     while(breakpoints[bp_length] != 0xffff) bp_length++;
     
@@ -33,13 +30,11 @@ int emulate(arcade_t *a, uint16_t *breakpoints, bool context)
 
     while(true)
     {
-         
         if(a->cycles_passed >= 33333)
         {
-            // screen interrupt
             timespec_get(&ts, TIME_UTC);
 
-            int64_t delta =  ms1 - TO_USEC(ts);
+            int64_t delta =  TO_USEC(ts) - ms1;
 
             int64_t to_sleep = 16666 - delta;
             
@@ -49,8 +44,8 @@ int emulate(arcade_t *a, uint16_t *breakpoints, bool context)
             ms1 = TO_USEC(ts);
 
             a->cycles_passed = 0;
-            cnt++;
-            if(cnt%60==0) printf("%d\n", cnt);
+            if(a->interrupt_enabled)
+                trigger_interrupt(a, 2);
         }
         
         
@@ -73,4 +68,12 @@ int emulate(arcade_t *a, uint16_t *breakpoints, bool context)
     return 0;
 }
 
-
+void trigger_interrupt(arcade_t *a, size_t num)
+{
+    if(num > 7) return;
+    a->SP -= 2;
+    *((uint16_t*)&a->mem->mem[a->SP]) = a->PC;
+    
+    a->PC = num * 8; // RST num
+    
+}
