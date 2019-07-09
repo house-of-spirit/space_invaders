@@ -1,8 +1,9 @@
 #pragma once
 #include <stdint.h>
-
-#include "register.h"
 #include "stdbool.h"
+
+
+#include <register/register.h>
 
 #pragma pack(1)
 typedef struct arcade_mem {

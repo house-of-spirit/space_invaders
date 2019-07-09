@@ -1,4 +1,5 @@
-#pragma once
+/* Taken from http://computerarcheology.com/Arcade/SpaceInvaders/RAMUse.html */
+
 {0x2000, "waitOnDraw", "Cleared by alien-draw and set by next-alien. This ensures no alien gets missed while drawing.", 1},
 {0x2002, "alienIsExploding", "Not-0 if an alien is exploding, 0 if not exploting", 1},
 {0x2003, "expAlienTimer", "Time (ISR ticks) left in alien-explosion", 1},

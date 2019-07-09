@@ -1,6 +1,6 @@
 #pragma once
-#include "arcade.h"
-#include "instruction.h"
+#include <arcade.h>
+#include <instruction/instruction.h>
 
 
 int emulate(arcade_t *arcade, uint16_t *breakpoints, bool debug);

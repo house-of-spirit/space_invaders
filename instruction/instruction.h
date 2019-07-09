@@ -1,8 +1,8 @@
 #pragma once
 #include <stddef.h>
 
-#include "arcade.h"
-#include "register.h"
+#include <arcade.h>
+#include <register/register.h>
 
 typedef enum ins_arg_type { ARG_NONE, ARG_REG, ARG_IMM8, ARG_IMM16, ARG_CONST } ins_arg_type_t;
 

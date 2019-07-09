@@ -1,8 +1,8 @@
 #pragma once
 
-#include "instruction.h"
-#include "emulator.h"
-#include "instruction_impl.h"
+#include <instruction/instruction.h>
+#include <emulator/emulator.h>
+#include <instruction/instruction_impl.h>
 
 #define NONE_ARG {ARG_NONE, 0x00}
 #define REG_ARG(X) {ARG_REG, REG_##X}

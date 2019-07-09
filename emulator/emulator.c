@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
-#include "debug.h"
-#include "emulator.h"
-#include "instruction.h"
+
+#include "debug/debug.h"
+#include "emulator/emulator.h"
+#include "instruction/instruction.h"
 
 int emulate(arcade_t *a, uint16_t *breakpoints, bool debug)
 {

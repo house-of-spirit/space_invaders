@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "arcade.h"
-#include "instruction.h"
-#include "rom.h"
-#include "emulator.h"
+#include <arcade.h>
+#include <instruction/instruction.h>
+#include <rom/rom.h>
+#include <emulator/emulator.h>
 
-/* cc *.c -o arcade -g */
+/* 
+ * cc `find ./ -name "*.c"` -o arcade -I./ 
+ */
 
 void setup_arcade(arcade_t *arcade)
 {

@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "rom.h"
-#include "instruction.h"
+#include <rom/rom.h>
+#include <instruction/instruction.h>
 
 void rom_add_file(char *filename, rom_t *rom)
 {

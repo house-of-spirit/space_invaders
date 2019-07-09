@@ -38,3 +38,7 @@ typedef struct debug_info {
 const debug_symbol_t space_invaders_symbols[] = {
     #include "debug_symbols.h"
 };
+
+const debug_label_t space_invaders_labels[] = {
+    #include "debug_labels.h"
+};
