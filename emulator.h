@@ -3,6 +3,8 @@
 #include "instruction.h"
 
 
-int emulate(arcade_t *arcade, uint16_t *breakpoints, bool context);
-void execute_ins(arcade_t *arcade, struct ins *instruction);
+int emulate(arcade_t *arcade, uint16_t *breakpoints, bool debug);
+void execute_current_ins(arcade_t *a);
+uint64_t do_frame_action(arcade_t *a, uint64_t previous_time);
 void trigger_interrupt(arcade_t *a, size_t num);
+void render_frame();

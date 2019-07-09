@@ -72,6 +72,14 @@ void arcade_context(arcade_t *arcade, char *buf)
 int main(int argc, char **argv)
 {
     
+    enum PROGRAM_MODE {
+
+        MODE_NONE = 0,
+        MODE_DEBUG,
+        MODE_RUN,
+        MODE_DISASS,
+    } mode = MODE_NONE;
+
     if(argc < 2)
     {
         usage();
@@ -84,16 +92,11 @@ int main(int argc, char **argv)
     rom_add_file("roms/invaders.e", &rom);
     
 
-    uint8_t bytecode[] = 
-    {
-        0x01, 0x80, 0x80,  // LXI B, 8080
-        0x31, 0x00, 0x24,  // LXI SP, dead
-        0xc5,              // PUSH B
-    };
+    if(!strcmp(argv[1], "--disassemble")) mode = MODE_DISASS;
+    else if(!strcmp(argv[1], "--debug")) mode = MODE_DEBUG;
+    else if(!strcmp(argv[1], "--run")) mode = MODE_RUN;
 
-    //rom_add_mem(bytecode, sizeof bytecode, &rom);
-
-    if(!strcmp(argv[1], "--disassemble") )
+    if(mode == MODE_DISASS)
     {
        ins_t **instructions = parse_n_bytecode(rom.contents, rom.size);
        char *disassembly = inss_to_str(instructions, 0x0);
@@ -102,7 +105,7 @@ int main(int argc, char **argv)
        free(disassembly);
        free_inss(instructions);
     }
-    else if(!strcmp(argv[1], "--debug"))
+    else if(mode == MODE_DEBUG || mode == MODE_RUN)
     {
         
         arcade_t arcade = {};
@@ -111,21 +114,26 @@ int main(int argc, char **argv)
         memcpy(arcade.mem->ROM, rom.contents, rom.size); 
     
         rom_free(&rom); 
-        uint16_t *breakpoints = malloc(sizeof (uint16_t) * (argc - 1));
         
-        for(int i = 2; i < argc; ++i)
+        uint16_t *breakpoints = NULL;
+        if(mode == MODE_DEBUG)
         {
-            size_t address = strtoll(argv[i], NULL, 16);
-            if(address > UINT16_MAX || address == 0xffff)
+            breakpoints = malloc(sizeof (uint16_t) * (argc - 1));
+        
+            for(int i = 2; i < argc; ++i)
             {
-                printf("Cannot break at %p!\n", address);
-                exit(1);
+                size_t address = strtoll(argv[i], NULL, 16);
+                if(address > UINT16_MAX || address == 0xffff)
+                {
+                    printf("Cannot break at %p!\n", address);
+                    exit(1);
+                }
+                breakpoints[i-2] = (uint16_t)address;
             }
-            breakpoints[i-2] = (uint16_t)address;
+            breakpoints[argc - 2] = 0xffff;
         }
-        breakpoints[argc - 2] = 0xffff;
 
-        emulate(&arcade, breakpoints, true);
+        emulate(&arcade, breakpoints, mode==MODE_DEBUG);
         free(breakpoints);
         free(arcade.mem);
         
@@ -137,6 +145,6 @@ int main(int argc, char **argv)
 
 void usage()
 {
-    printf("Usage: arcade [--disassemble]|[--debug (<breakpoint_1> <breakpoint_2>)]\n");
+    printf("Usage: arcade [--run]|[--debug (<breakpoint_1> <breakpoint_2> ...)]|[--disassemble]\n");
     exit(1);
 }

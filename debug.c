@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "debug_info.h"
 
 void breakpoint_delete(uint16_t *breakpoints, size_t *bp_length, char *query)
 {
