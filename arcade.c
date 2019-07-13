@@ -106,6 +106,8 @@ int main(int argc, char **argv)
        printf("%s\n", disassembly);
        free(disassembly);
        free_inss(instructions);
+
+       return 0;
     }
     else if(mode == MODE_DEBUG || mode == MODE_RUN)
     {

@@ -54,8 +54,8 @@ typedef struct ins {
 } ins_t;
 
 
-int ins_to_str(char *result, ins_t *instruction);
-int arg_to_str(char *result, ins_arg_t *arg);
+int ins_to_str(char *result, ins_t *instruction, bool *has_color);
+int arg_to_str(char *result, ins_arg_t *arg, bool *has_color);
 char *inss_to_str(ins_t **instructions, size_t mem_offset);
 
 const char *mnemonic_to_str(mnem_t mnemonic);

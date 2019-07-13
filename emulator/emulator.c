@@ -50,8 +50,18 @@ void execute_current_ins(arcade_t *a)
 {
     ins_t instruction = {};
     uint8_t *ins_bytecode = &a->mem->mem[a->PC];
+
+    if(a->PC > sizeof *a->mem ||
+       a->SP > sizeof *a->mem)
+    {
+        puts("*** Addressing register out of bounds!! ***");
+        exit(1);
+    }
+
     parse_ins(&instruction, ins_bytecode);
+    
     instruction.ins_func(a, &instruction);
+    
     a->PC += instruction.bytecode_size; 
     a->cycles_passed += instruction.cycle_count;
 }

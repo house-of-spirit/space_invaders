@@ -5,7 +5,19 @@
 #include "instruction.h"
 #include "instruction_list.h"
 
-int ins_to_str(char *result, ins_t *instruction)
+#include <debug/debug_info.h>
+
+
+#define ASCII_GREEN "\033[0;32m"
+#define ASCII_RED "\033[0;31m"
+#define ASCII_BOLD "\033[1m"
+#define ASCII_BLUE "\033[34;1m"
+#define ASCII_MAGENTA "\033[35;1m"
+#define ASCII_STOP "\033[0m"
+
+const char whitespace[] = "                                                                                                    ";
+
+int ins_to_str(char *result, ins_t *instruction, bool *has_color)
 {
     /* Deserialize a `ins_t` to a string
      * `result` should have space for 18 bytes ("XTHL FLAGS, FLAGS\0")
@@ -15,75 +27,133 @@ int ins_to_str(char *result, ins_t *instruction)
      */
 
     const char *mnem = mnemonic_to_str(instruction->mnemonic);
-    char args[16] = {0};
-
+    char args[512] = {0};
+    
     if(instruction->args[0].type != ARG_NONE)
     {
-        arg_to_str(args, &instruction->args[0]);
+        arg_to_str(args, &instruction->args[0], has_color);
 
         if(instruction->args[1].type != ARG_NONE)
         {
             strcat(args, ", ");
-            arg_to_str(&args[strlen(args)], &instruction->args[1]);
+            arg_to_str(&args[strlen(args)], &instruction->args[1], has_color);
         }
     }
     
     strcpy(result, mnem);
     strcat(result, " ");
     strcat(result, args);
-
-    return 0; 
-
 }
 
 char *inss_to_str(ins_t **instructions, size_t mem_offset)
 {
-    char ins_accum[18] = {0};
     char addr_accum[7] = {0};
-    char whitespace_buf[50] = {0};
+    char ins_accum[512] = {0};
+    char comment_buf[512] = {0};
+    char label_buf[64] = {0};
     char *result = malloc(1);
-    char bytecode_str[9]; // "00 00 00\0"
     size_t size = 1;
     size_t current_addr = mem_offset;
 
     result[0] = 0;
     for(int i = 0; instructions[i] != NULL; ++i)
     {
-        ins_t *instruction = instructions[i];
+        bool standalone_comment_state = false, ins_comment_state = false;
+        const debug_comment_t *ins_comment = NULL;
         
-        int j;
-        for(j = 0; j < instruction->bytecode_size; ++j)
+        for(int j = 0; j < (sizeof space_invaders_labels)/(sizeof *space_invaders_labels); ++j)
         {
-            sprintf(&bytecode_str[j*3], "%02x ", instruction->bytecode[j]);
-        }
-        bytecode_str[j*3 - 1] = 0;
-        
-        ins_to_str(ins_accum, instruction);
-        
-        sprintf(addr_accum, "%04x: ", current_addr);
-        current_addr += instruction->bytecode_size;
+            const debug_label_t *current_label = &space_invaders_labels[j];
 
-        size += 60;
+            if(current_label->address != current_addr) continue;
+
+            sprintf(label_buf, "\n" ASCII_MAGENTA "%s" ASCII_STOP ":\n", current_label->label);
+            size += strlen(label_buf);
+            result = realloc(result, size);
+            strcat(result, label_buf);
+            break;
+
+        }
+
+        for(int j = 0; j < (sizeof space_invaders_comments)/(sizeof *space_invaders_comments); ++j)
+        {
+            const debug_comment_t *current_comment = &space_invaders_comments[j];
+
+            if(current_comment->address != current_addr) continue;
+
+            if(current_comment->instruction_comment && !ins_comment_state)
+            {
+                ins_comment_state = true;
+                ins_comment = current_comment;
+                continue;
+            }
+
+            if(!current_comment->instruction_comment && !standalone_comment_state)
+            {
+                strcat(comment_buf, ASCII_GREEN);
+
+                size_t comment_index = strlen(comment_buf);
+                for(int k = 0; current_comment->comment[k] != 0; ++k)
+                {
+                    if(k == 0 || k > 0 && current_comment->comment[k-1] == '\n')
+                    {
+                        strcat(comment_buf, "; ");
+                        comment_index += 2;
+                    }
+                    comment_buf[comment_index++] = current_comment->comment[k];
+                }
+                comment_buf[comment_index++] = '\n';
+                comment_buf[comment_index++] = 0;
+                
+                strcat(comment_buf, ASCII_STOP);
+
+                size += strlen(comment_buf);
+                result = realloc(result, size);
+                strcat(result, comment_buf);
+                memset(comment_buf, 0, sizeof comment_buf);
+                continue;
+            }
+        }
+
+        ins_t *instruction = instructions[i];
+
+        bool ins_has_color = false;
+        ins_to_str(ins_accum, instruction, &ins_has_color);
+        
+        if(ins_comment_state)
+        {
+            sprintf(comment_buf, ASCII_GREEN "; %s" ASCII_STOP, ins_comment->comment);
+            size += strlen(comment_buf);
+        }
+
+        sprintf(addr_accum, "%04x: ", current_addr);
+        
+        size += sizeof whitespace + 1;
+
         result = realloc(result, size);
         strcat(result, addr_accum);
         strcat(result, ins_accum);
         
-        memset(whitespace_buf, ' ', (50 - strlen(addr_accum) - strlen(ins_accum)) );
-        whitespace_buf[50 - strlen(addr_accum) - strlen(ins_accum)] = 0;
+        strncat(result, whitespace, (sizeof whitespace) - (strlen(addr_accum) + strlen(ins_accum)) - (ins_has_color ? 0 : 11) );
+        
+        if(ins_comment_state)
+        {
+            strcat(result, comment_buf);
+            memset(comment_buf, 0, sizeof comment_buf);
+        }
 
-        strcat(result, whitespace_buf);
-        strcat(result, bytecode_str);
         strcat(result, "\n");
+
+        current_addr += instruction->bytecode_size;
     }
 
     return result;
 }
 
-int arg_to_str(char *result, ins_arg_t *arg)
+int arg_to_str(char *result, ins_arg_t *arg, bool *has_color)
 {
     /* Deserialize a `ins_arg_t` to a string. 
-     * to be safe, `result` should have space for  6 bytes ("FLAGS\0")
-     * although from caller context, size can be more accurately inferred preemptively
+     * size needs to be accurately inferred preemptively
      */
      
     switch(arg->type)
@@ -98,8 +168,39 @@ int arg_to_str(char *result, ins_arg_t *arg)
           sprintf(result, "%02x", arg->value.imm8);
           break;
         case ARG_IMM16:
-          sprintf(result, "%04x", arg->value.imm16);
-          break;
+            
+            for(int i = 0; i < (sizeof space_invaders_labels)/(sizeof *space_invaders_labels); ++i)
+            {
+                const debug_label_t *label = &space_invaders_labels[i];
+                if(arg->value.imm16 == label->address)
+                {
+                    sprintf(result, ASCII_RED "%s" ASCII_STOP, label->label);
+                    if(has_color != NULL) *has_color = true;
+                    return 0;
+                }
+            }
+            for(int i = 0; i < (sizeof space_invaders_symbols)/(sizeof *space_invaders_symbols); ++i)
+            {
+                const debug_symbol_t *symbol = &space_invaders_symbols[i];
+
+                if(arg->value.imm16 == symbol->address)
+                {
+                    sprintf(result, ASCII_BLUE "%s" ASCII_STOP, symbol->name);
+                    if(has_color != NULL) *has_color = true;
+                    return 0;
+                }
+
+                if(arg->value.imm16 > symbol->address 
+                        && arg->value.imm16 < symbol->address + symbol->value_size)
+                {
+                    sprintf(result, ASCII_BLUE "%s+%d" ASCII_STOP, symbol->name, arg->value.imm16 - symbol->address);
+                    if(has_color != NULL) *has_color = true;
+                    return 0;
+                }
+
+            }
+            sprintf(result, "%04x", arg->value.imm16);
+            break;
         case ARG_CONST:
           sprintf(result, "%d", arg->value.constant);
           break;

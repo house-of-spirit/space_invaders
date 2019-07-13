@@ -102,7 +102,7 @@ void interactive_context(arcade_t *a, uint16_t *breakpoints, size_t *bp_length)
                 goto breakpoint_trigger;
             }
 
-            else if(query[0] == 'd' && isspace(query[1]))
+            else if(query[0] == 'r' && isspace(query[1]))
             {
                 breakpoint_delete(breakpoints, bp_length, query);
 
