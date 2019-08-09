@@ -74,6 +74,7 @@ char *inss_to_str(ins_t **instructions, size_t mem_offset)
             break;
 
         }
+        
 
         for(int j = 0; j < (sizeof space_invaders_comments)/(sizeof *space_invaders_comments); ++j)
         {
@@ -219,7 +220,6 @@ const char *mnemonic_to_str(mnem_t mnemonic)
 
 }
 
-
 size_t parse_ins(ins_t *result, uint8_t *bytecode)
 {
     /* Parse instruction from bytecode, 
@@ -247,7 +247,6 @@ size_t parse_ins(ins_t *result, uint8_t *bytecode)
     memcpy(result->bytecode, bytecode, bytecode_size);
     return bytecode_size;
 }
-
 
 ins_t **parse_n_bytecode(uint8_t *bytecode, size_t n_bytecode)
 {
@@ -291,7 +290,6 @@ ins_t **parse_n_ins(uint8_t *bytecode, size_t n_ins)
     instructions[n_ins] = NULL;
     return instructions;
 }
-
 
 size_t len_bytecode_inss(ins_t **instructions)
 {
