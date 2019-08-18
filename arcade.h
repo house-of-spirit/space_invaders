@@ -2,8 +2,9 @@
 #include <stdint.h>
 #include "stdbool.h"
 
-
 #include <register/register.h>
+
+#include <debug/debug_state.h>
 
 #pragma pack(1)
 typedef struct arcade_mem {
@@ -33,6 +34,7 @@ typedef struct arcade_mem {
 } arcade_mem_t;
 
 
+struct debug_state_t;
 typedef struct arcade {
     
     union {
@@ -84,8 +86,10 @@ typedef struct arcade {
 
     arcade_mem_t *mem;
     bool interrupt_enabled;
-
     size_t cycles_passed;
+
+    debug_state_t *debug_state;
+    bool debug_enabled;
 
 } arcade_t;
 

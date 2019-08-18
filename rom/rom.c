@@ -13,7 +13,7 @@ void rom_add_file(char *filename, rom_t *rom)
     
     if(strlen(filename) > 300)
     {
-        fprintf(stderr, "Path %s too long: max 300 characters\n");
+        fprintf(stderr, "Path %s too long: max 300 characters\n", filename);
         return;
     }
 
@@ -88,17 +88,17 @@ char *rom_info(rom_t *rom)
     char *result = calloc(1, 1);
     size_t result_sz = 1;
 
-    sprintf(accum, "Total rom size: 0x%04x\n\n", rom->size);
+    sprintf(accum, "Total rom size: 0x%04lx\n\n", rom->size);
     
     append;
 
-    sprintf(accum, "File count: %d\n\n\t\033[1mOffset    Path\033[0m\n", rom->file_count);
+    sprintf(accum, "File count: %ld\n\n\t\033[1mOffset    Path\033[0m\n", rom->file_count);
 
     append;
 
     for(int i = 0; i < rom->file_count; ++i)
     {
-        sprintf(accum, "\t%04x:     %s\n", rom->mappings[i].offset, rom->mappings[i].file_path);
+        sprintf(accum, "\t%04lx:     %s\n", rom->mappings[i].offset, rom->mappings[i].file_path);
 
         append;
     }

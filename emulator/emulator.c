@@ -4,11 +4,14 @@
 #include <unistd.h>
 #include <time.h>
 
-#include "debug/debug.h"
-#include "emulator/emulator.h"
-#include "instruction/instruction.h"
+#include <debug/debug.h>
+#include <emulator/emulator.h>
+#include <instruction/instruction.h>
+#include <arcade.h>
+#include <debug/debug_state.h>
 
-int emulate(arcade_t *a, uint16_t *breakpoints, bool debug)
+
+int emulate(arcade_t *a, uint16_t *breakpoints)
 {
     #define TO_USEC(ts) 1000000 * ts.tv_sec + ts.tv_nsec / 1000000
     
@@ -16,7 +19,7 @@ int emulate(arcade_t *a, uint16_t *breakpoints, bool debug)
 
     char debug_buf[2048] = {};
     char query[256] = {0};
-    
+     
     struct timespec ts;
     uint64_t prev_frame_time;
     size_t bp_length = 0;
@@ -34,14 +37,15 @@ int emulate(arcade_t *a, uint16_t *breakpoints, bool debug)
         if(a->cycles_passed >= 33333)
             prev_frame_time = do_frame_action(a, prev_frame_time);
             
-        if(debug)
+        if(a->debug_enabled)
+        {
+            debug_add_trace(a);
             interactive_context(a, breakpoints, &bp_length);
+        }
         
         execute_current_ins(a);    
              
     }
-
-
     return 0;
 }
 
@@ -54,7 +58,16 @@ void execute_current_ins(arcade_t *a)
     if(a->PC > sizeof *a->mem ||
        a->SP > sizeof *a->mem)
     {
+        char context_buf[2048] = {};
         puts("*** Addressing register out of bounds!! ***");
+        if(a->debug_enabled)
+        {
+            arcade_context(a, context_buf);
+            puts(context_buf);
+            printf("\n\nInstruction trace :\n");
+            debug_print_trace(a->debug_state);
+        }
+        
         exit(1);
     }
 

@@ -122,14 +122,15 @@ int main(int argc, char **argv)
         uint16_t *breakpoints = NULL;
         if(mode == MODE_DEBUG)
         {
+            arcade.debug_enabled = true;
             breakpoints = malloc(sizeof (uint16_t) * (argc - 1));
-        
+            
             for(int i = 2; i < argc; ++i)
             {
                 size_t address = strtoll(argv[i], NULL, 16);
                 if(address > UINT16_MAX || address == 0xffff)
                 {
-                    printf("Cannot break at %p!\n", address);
+                    printf("Cannot break at %p!\n", (void*)address);
                     exit(1);
                 }
                 breakpoints[i-2] = (uint16_t)address;
@@ -137,7 +138,7 @@ int main(int argc, char **argv)
             breakpoints[argc - 2] = 0xffff;
         }
 
-        emulate(&arcade, breakpoints, mode==MODE_DEBUG);
+        emulate(&arcade, breakpoints);
         free(breakpoints);
         free(arcade.mem);
         

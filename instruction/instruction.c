@@ -127,7 +127,7 @@ char *inss_to_str(ins_t **instructions, size_t mem_offset)
             size += strlen(comment_buf);
         }
 
-        sprintf(addr_accum, "%04x: ", current_addr);
+        sprintf(addr_accum, "%04lx: ", current_addr);
         
         size += sizeof whitespace + 1;
 
@@ -268,7 +268,7 @@ ins_t **parse_n_bytecode(uint8_t *bytecode, size_t n_bytecode)
 
    if(i != n_bytecode)
    {
-       fprintf(stderr, "Bytecode not aligned: expected to parse 0x%x bytes, but parsed 0x%x !!!\n", n_bytecode, i);
+       fprintf(stderr, "Bytecode not aligned: expected to parse 0x%lx bytes, but parsed 0x%x !!!\n", n_bytecode, i);
        free_inss(instructions);
        return NULL;
    }
