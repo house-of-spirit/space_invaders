@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "debug_info.h"
+#include <debug/debug_info.h>
+
+#include <debug/debug_state.h>
 
 void breakpoint_delete(uint16_t *breakpoints, size_t *bp_length, char *query)
 {
@@ -112,6 +114,18 @@ void interactive_context(arcade_t *a, uint16_t *breakpoints, size_t *bp_length)
             else if(query[0] == 'x' && isspace(query[1]))
             {
                 memory_examine(a, query);
+                goto breakpoint_trigger;
+            }
+            else if(!strncmp("ti", query, 2))
+            {
+                debug_print_ins_trace(&a->debug_state->trace_ins);
+                printf("\n\n");
+                goto breakpoint_trigger;
+            }
+            else if(!strncmp("tl", query, 2))
+            {
+                debug_print_label_trace(&a->debug_state->trace_label);
+                printf("\n\n");
                 goto breakpoint_trigger;
             }
             break;

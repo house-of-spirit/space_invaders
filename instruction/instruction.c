@@ -313,3 +313,109 @@ void free_inss(ins_t **instructions)
     }
     free(instructions);
 }
+
+const debug_label_t *ins_alters_pc_to_label(arcade_t *a, ins_t *instruction)
+{
+    #define RET_ARG return debug_addr_get_label(instruction->args[0].value.imm16)
+    #define RET_STACK return debug_addr_get_label(*((uint16_t*)&a->mem->mem[a->SP]))
+    
+    switch(instruction->mnemonic)
+    {
+        case MNEM_JMP:
+        case MNEM_CALL:
+            RET_ARG;
+        
+        case MNEM_PCHL:
+            return debug_addr_get_label(a->HL);    
+        
+        case MNEM_JZ:
+        case MNEM_CZ:
+            if(a->FLAGS.Z)
+                RET_ARG;
+            break;
+        
+        case MNEM_JNZ:
+        case MNEM_CNZ:
+            if(!a->FLAGS.Z)
+                RET_ARG;
+            break;
+
+        case MNEM_JC:
+        case MNEM_CC:
+            if(a->FLAGS.C)
+                RET_ARG;
+            break;
+        
+        case MNEM_JNC:
+        case MNEM_CNC:
+            if(!a->FLAGS.C)
+                RET_ARG;
+            break;
+         
+        case MNEM_JP:
+        case MNEM_CP:
+            if(!a->FLAGS.S)
+                RET_ARG;
+            break;
+        
+        case MNEM_JM:
+        case MNEM_CM:
+            if(a->FLAGS.S)
+                RET_ARG;
+            break;
+        
+        case MNEM_JPE:
+        case MNEM_CPE:
+            if(a->FLAGS.P)
+                RET_ARG;
+            break;
+       
+        case MNEM_JPO:
+        case MNEM_CPO:
+            if(!a->FLAGS.P)
+                RET_ARG;
+            break;
+        
+        case MNEM_RZ:
+            if(a->FLAGS.Z)
+                RET_STACK;
+            break;
+
+        case MNEM_RNZ:
+            if(!a->FLAGS.Z)
+                RET_STACK;
+            break;
+        
+        case MNEM_RC:
+            if(a->FLAGS.C)
+                RET_STACK;
+            break;
+        
+        case MNEM_RNC:
+            if(!a->FLAGS.C)
+                RET_STACK;
+            break;
+
+        case MNEM_RP:
+            if(!a->FLAGS.S)
+                RET_STACK;
+            break;
+
+        case MNEM_RM:
+            if(a->FLAGS.S)
+                RET_STACK;
+            break;
+
+        case MNEM_RPE:
+            if(a->FLAGS.P)
+                RET_STACK;
+            break;
+
+        case MNEM_RPO:
+            if(!a->FLAGS.P)
+                RET_STACK;
+            break;
+    }
+
+    return NULL;
+}

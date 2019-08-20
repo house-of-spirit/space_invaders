@@ -7,6 +7,10 @@
 #include <rom/rom.h>
 #include <emulator/emulator.h>
 
+#include <debug/debug_info.h>
+
+
+
 /* 
  * cc `find ./ -name "*.c"` -o arcade -I./ 
  */
@@ -73,7 +77,6 @@ void arcade_context(arcade_t *arcade, char *buf)
 
 int main(int argc, char **argv)
 {
-    
     enum PROGRAM_MODE {
 
         MODE_NONE = 0,
@@ -117,12 +120,14 @@ int main(int argc, char **argv)
 
         memcpy(arcade.mem->ROM, rom.contents, rom.size); 
     
-        rom_free(&rom); 
+        rom_free(&rom);
         
         uint16_t *breakpoints = NULL;
         if(mode == MODE_DEBUG)
         {
             arcade.debug_enabled = true;
+            debug_state_init(&arcade);
+
             breakpoints = malloc(sizeof (uint16_t) * (argc - 1));
             
             for(int i = 2; i < argc; ++i)
@@ -142,10 +147,14 @@ int main(int argc, char **argv)
         free(breakpoints);
         free(arcade.mem);
         
+        if(arcade.debug_enabled)
+        {
+            debug_free_state(arcade.debug_state);
+        }
+
         return 0;
     }
     usage();
-
 }
 
 void usage()

@@ -9,17 +9,12 @@
 #include <instruction/instruction.h>
 #include <arcade.h>
 #include <debug/debug_state.h>
-
+#include <debug/debug_info.h>
 
 int emulate(arcade_t *a, uint16_t *breakpoints)
 {
     #define TO_USEC(ts) 1000000 * ts.tv_sec + ts.tv_nsec / 1000000
     
-    static bool should_break = false;
-
-    char debug_buf[2048] = {};
-    char query[256] = {0};
-     
     struct timespec ts;
     uint64_t prev_frame_time;
     size_t bp_length = 0;
@@ -39,7 +34,8 @@ int emulate(arcade_t *a, uint16_t *breakpoints)
             
         if(a->debug_enabled)
         {
-            debug_add_trace(a);
+            debug_add_trace(&a->debug_state->trace_ins, a->PC);
+
             interactive_context(a, breakpoints, &bp_length);
         }
         
@@ -64,15 +60,29 @@ void execute_current_ins(arcade_t *a)
         {
             arcade_context(a, context_buf);
             puts(context_buf);
-            printf("\n\nInstruction trace :\n");
-            debug_print_trace(a->debug_state);
+            printf("\n\nInstruction trace:\n");
+            debug_print_ins_trace(&a->debug_state->trace_ins);
+
+            printf("\n\nFunction trace:\n");
+            debug_print_label_trace(&a->debug_state->trace_label);
+            puts("");
         }
         
         exit(1);
     }
 
     parse_ins(&instruction, ins_bytecode);
-    
+        
+    if(a->debug_enabled)
+    {
+        const debug_label_t *label = ins_alters_pc_to_label(a, &instruction);
+        
+        if(label != NULL)
+        {
+            debug_add_trace(&a->debug_state->trace_label, label->address);
+        }
+    }
+        
     instruction.ins_func(a, &instruction);
     
     a->PC += instruction.bytecode_size; 

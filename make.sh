@@ -1,1 +1,1 @@
-gcc `find ./ -name "*.c"` -o arcade -I ./ -g
+gcc `find ./ -name "*.c"` -o arcade -I ./  -g 

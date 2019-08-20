@@ -1,4 +1,7 @@
 #pragma once
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 typedef struct debug_symbol {
     
@@ -17,11 +20,11 @@ typedef struct debug_comment {
 } debug_comment_t;
 
 typedef struct debug_label {
-
+    
     uint16_t address;
+    
     char *label;   /* Label string */
-
-} debug_label_t;
+} __attribute__ ((packed)) debug_label_t;
 
 typedef struct debug_info {
     size_t symbol_count;
@@ -36,10 +39,12 @@ static const debug_symbol_t space_invaders_symbols[] = {
     #include <debug/debug_symbols.h>
 };
 
-static const debug_label_t space_invaders_labels[] = {
+static const debug_label_t space_invaders_labels[] __attribute__ ((section ("rodata"))) = {
     #include <debug/debug_labels.h>
 };
 
 static const debug_comment_t space_invaders_comments[] = {
     #include <debug/debug_comments.h>
 };
+
+const debug_label_t *debug_addr_get_label(uint16_t PC);

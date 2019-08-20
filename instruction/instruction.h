@@ -4,6 +4,8 @@
 #include <arcade.h>
 #include <register/register.h>
 
+#include <debug/debug_info.h>
+
 typedef enum ins_arg_type { ARG_NONE, ARG_REG, ARG_IMM8, ARG_IMM16, ARG_CONST } ins_arg_type_t;
 
 typedef enum mnem { 
@@ -82,3 +84,6 @@ const static char *mnemonic_strings[] = {
     "RM", "SPHL", "JM", "EI", "CM", "CPI" 
 
 };
+
+
+const debug_label_t *ins_alters_pc_to_label(arcade_t *a, ins_t *instruction);
