@@ -10,14 +10,14 @@ typedef struct debug_symbol {
     char *description;     
     size_t value_size;
 
-} debug_symbol_t;
+} __attribute__ ((packed)) debug_symbol_t;
 
 typedef struct debug_comment {
     uint16_t address;
     char *comment;
     bool instruction_comment; /* signifies whether the comment should be placed on the line(s) before the instruction, or on the same line. */
 
-} debug_comment_t;
+} __attribute__ ((packed)) debug_comment_t;
 
 typedef struct debug_label {
     
@@ -47,5 +47,19 @@ static const debug_comment_t space_invaders_comments[] = {
     #include <debug/debug_comments.h>
 };
 
+void debug_print_space_invaders_labels();
+void debug_print_space_invaders_symbols();
+
 const debug_label_t *debug_addr_get_label(uint16_t PC);
 const debug_label_t *debug_string_get_label(char *label_string);
+
+
+typedef struct function_interval {
+    uint16_t begin;
+    uint16_t end;
+} function_interval_t;
+
+
+function_interval_t debug_get_function_interval(char *label_string);
+
+

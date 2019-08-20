@@ -25,7 +25,7 @@ void debug_print_breakpoint(breakpoint_t *bp);
 
 void debug_add_breakpoints(debug_state_t *state, int bp_count, char **bp_list);
 void debug_add_breakpoint_address(debug_state_t *state, uint16_t address);
-void debug_add_breakpoint_label(debug_state_t *state, char *label);
+bool debug_add_breakpoint_label(debug_state_t *state, char *label);
 void debug_delete_breakpoint_address(debug_state_t *state, uint16_t address);
 void debug_delete_breakpoint_label(debug_state_t *state, char *label);
 

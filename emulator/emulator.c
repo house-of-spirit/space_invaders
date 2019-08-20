@@ -11,7 +11,7 @@
 #include <debug/debug_state.h>
 #include <debug/debug_info.h>
 
-int emulate(arcade_t *a, uint16_t *breakpoints)
+int emulate(arcade_t *a)
 {
     #define TO_USEC(ts) 1000000 * ts.tv_sec + ts.tv_nsec / 1000000
     

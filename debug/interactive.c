@@ -31,6 +31,21 @@ void memory_examine(arcade_t *a, char *query)
     }
 }
 
+
+void interactive_print_help()
+{
+    printf("\th              - show this menu\n"
+           "\tb [LABEL|ADDR] - Set breakpoint at argument\n"
+           "\td [LABEL|ADDR] - Remove breakpoint at argument\n"
+           "\tn              - Go to next instruction and display this prompt again\n"
+           "\tc              - Continue execution\n"
+           "\te              - Exit emulator\n"
+           "\tx ADDR AMOUNT  - Display x bytes of memory at address\n"
+           "\tti             - Display instruction trace\n"
+           "\ttl             - Display label (function) trace (no ISR)\n\n");
+
+}
+
 void interactive_context(arcade_t *a)
 {
     static bool should_break = false;
@@ -46,7 +61,8 @@ void interactive_context(arcade_t *a)
 
     if(debug_addr_in_breakpoints(a->debug_state->breakpoints, a->PC))
     {
-        
+        interactive_print_help();
+
         breakpoint_trigger:
         
         if(!context_set) 
@@ -64,9 +80,19 @@ void interactive_context(arcade_t *a)
         query[strlen(query) - 1] = 0;
         if(query[0] == 'n')
         {
-        should_break = true;
+            should_break = true;
         }
 
+        else if(query[0] == 'c')
+        {
+            return;
+        }
+
+        else if(query[0] == 'h')
+        {
+            interactive_print_help();
+            goto breakpoint_trigger;
+        }
         else if(query[0] == 'e')
         {
             exit(0);
@@ -87,7 +113,7 @@ void interactive_context(arcade_t *a)
             if(isdigit(query[2]))
                 debug_delete_breakpoint_address(a->debug_state, strtoll(&query[2], NULL, 16));
             else
-                debug_add_breakpoint_label(a->debug_state, &query[2]);
+                debug_delete_breakpoint_label(a->debug_state, &query[2]);
 
             goto breakpoint_trigger;
         }
@@ -107,6 +133,13 @@ void interactive_context(arcade_t *a)
         {
             debug_print_label_trace(&a->debug_state->trace_label);
             printf("\n\n");
+            goto breakpoint_trigger;
+        }
+        else
+        {
+            puts("Command not recognized");
+            puts("Type \"h(elp)\" for all commands");
+
             goto breakpoint_trigger;
         }
     }

@@ -59,30 +59,48 @@ void debug_init_breakpoint_if_NULL(debug_state_t *state)
 
 void debug_add_breakpoint_address(debug_state_t *state, uint16_t address)
 {
+    bool is_null = state->breakpoints == NULL;
     debug_init_breakpoint_if_NULL(state);
     breakpoint_t *curr = state->breakpoints;
 
     while(curr->next)
         curr = curr->next;
+    
+    if(!is_null)
+    {
+        curr->next = calloc(1, sizeof *curr->next);
+        curr = curr->next;
+    }
 
-    curr->next = calloc(1, sizeof *curr->next);
-    curr->next->type = BP_ADDRESS;
-    curr->next->value.address = address;
+    curr->type = BP_ADDRESS;
+    curr->value.address = address;
 
 }
 
-void debug_add_breakpoint_label(debug_state_t *state, char *label)
+bool debug_add_breakpoint_label(debug_state_t *state, char *label)
 {
+    const debug_label_t *fetched_label = debug_string_get_label(label);
+
+    if(!fetched_label) return false;
+
+    bool is_null = state->breakpoints == NULL;
     debug_init_breakpoint_if_NULL(state);
 
     breakpoint_t *curr = state->breakpoints;
-
+    
     while(curr->next)
         curr = curr->next;
+    
+    if(!is_null)
+    {
+        curr->next = calloc(1, sizeof *curr->next);
+        curr = curr->next;
+    }
 
-    curr->next = calloc(1, sizeof *curr->next);
-    curr->next->type = BP_LABEL;
-    curr->next->value.label = debug_string_get_label(label);
+    curr->type = BP_LABEL;
+    curr->value.label = fetched_label;
+
+    return true;
 }
 
 void debug_delete_breakpoint_address(debug_state_t *state, uint16_t address)
@@ -93,13 +111,16 @@ void debug_delete_breakpoint_address(debug_state_t *state, uint16_t address)
 
     while(curr)
     {
-        if(curr->value.address == address)
+        if(curr->type == BP_ADDRESS && curr->value.address == address)
         {
             debug_delete_breakpoint(prev_pointer, curr);
             curr = *prev_pointer;
         }
         else
+        {
+            prev_pointer = &curr->next;
             curr = curr->next;
+        }
     }
 }
 
@@ -111,14 +132,16 @@ void debug_delete_breakpoint_label(debug_state_t *state, char *label)
 
     while(curr)
     {
-        if(!strcmp(curr->value.label->label, label))
+        if(curr->type == BP_LABEL && !strcmp(curr->value.label->label, label))
         {
             debug_delete_breakpoint(prev_pointer, curr);
             curr = *prev_pointer;
         }
         else
+        {
+            prev_pointer = &curr->next;
             curr = curr->next;
-
+        }
     }
 }
 
@@ -142,7 +165,7 @@ bool debug_addr_in_breakpoints(breakpoint_t *bp, uint16_t address)
                     return true;
                 break;
             case BP_LABEL:
-                if(curr->value.label && curr->value.label->address == address)
+                if(curr->value.label->address == address)
                     return true;
                 break;
         }
