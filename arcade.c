@@ -8,7 +8,7 @@
 #include <emulator/emulator.h>
 
 #include <debug/debug_info.h>
-
+#include <debug/breakpoint.h>
 
 
 /* 
@@ -127,20 +127,8 @@ int main(int argc, char **argv)
         {
             arcade.debug_enabled = true;
             debug_state_init(&arcade);
-
-            breakpoints = malloc(sizeof (uint16_t) * (argc - 1));
             
-            for(int i = 2; i < argc; ++i)
-            {
-                size_t address = strtoll(argv[i], NULL, 16);
-                if(address > UINT16_MAX || address == 0xffff)
-                {
-                    printf("Cannot break at %p!\n", (void*)address);
-                    exit(1);
-                }
-                breakpoints[i-2] = (uint16_t)address;
-            }
-            breakpoints[argc - 2] = 0xffff;
+            debug_add_breakpoints(arcade.debug_state, argc-2, &argv[2]);
         }
 
         emulate(&arcade, breakpoints);

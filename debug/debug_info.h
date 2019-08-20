@@ -48,3 +48,4 @@ static const debug_comment_t space_invaders_comments[] = {
 };
 
 const debug_label_t *debug_addr_get_label(uint16_t PC);
+const debug_label_t *debug_string_get_label(char *label_string);

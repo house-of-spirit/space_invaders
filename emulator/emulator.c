@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <time.h>
 
-#include <debug/debug.h>
+#include <debug/interactive.h>
 #include <emulator/emulator.h>
 #include <instruction/instruction.h>
 #include <arcade.h>
@@ -17,13 +17,9 @@ int emulate(arcade_t *a, uint16_t *breakpoints)
     
     struct timespec ts;
     uint64_t prev_frame_time;
-    size_t bp_length = 0;
 
     timespec_get(&ts, TIME_UTC);
     prev_frame_time = TO_USEC(ts);
-    
-    if(breakpoints != NULL)
-        while(breakpoints[bp_length] != 0xffff) bp_length++;
     
     a->cycles_passed = 0;
 
@@ -36,7 +32,7 @@ int emulate(arcade_t *a, uint16_t *breakpoints)
         {
             debug_add_trace(&a->debug_state->trace_ins, a->PC);
 
-            interactive_context(a, breakpoints, &bp_length);
+            interactive_context(a);
         }
         
         execute_current_ins(a);    

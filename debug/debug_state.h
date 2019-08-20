@@ -21,9 +21,13 @@ typedef struct trace {
     size_t max_count;
 } trace_t;
 
+typedef struct breakpoint breakpoint_t;
+
 typedef struct debug_state {
     trace_t trace_ins;
     trace_t trace_label;
+    
+    breakpoint_t *breakpoints;
 } debug_state_t;
 
 
