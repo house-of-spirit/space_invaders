@@ -10,6 +10,7 @@
 #include <arcade.h>
 #include <debug/debug_state.h>
 #include <debug/debug_info.h>
+#include <debug/interactive.h>
 
 int emulate(arcade_t *a)
 {
@@ -22,12 +23,16 @@ int emulate(arcade_t *a)
     prev_frame_time = TO_USEC(ts);
     
     a->cycles_passed = 0;
+        
+    bool midscreen_int = true;
 
     while(true)
     {
-        if(a->cycles_passed >= 33333)
-            prev_frame_time = do_frame_action(a, prev_frame_time);
-            
+        if(a->cycles_passed >= 16666)
+        {
+            prev_frame_time = do_frame_action(a, prev_frame_time, midscreen_int);
+            midscreen_int = !midscreen_int;
+        }   
         if(a->debug_enabled)
         {
             debug_add_trace(&a->debug_state->trace_ins, a->PC);
@@ -54,7 +59,7 @@ void execute_current_ins(arcade_t *a)
         puts("*** Addressing register out of bounds!! ***");
         if(a->debug_enabled)
         {
-            arcade_context(a, context_buf);
+            debug_context(a, context_buf);
             puts(context_buf);
             printf("\n\nInstruction trace:\n");
             debug_print_ins_trace(&a->debug_state->trace_ins);
@@ -85,12 +90,12 @@ void execute_current_ins(arcade_t *a)
     a->cycles_passed += instruction.cycle_count;
 }
 
-uint64_t do_frame_action(arcade_t *a, uint64_t previous_time)
+uint64_t do_frame_action(arcade_t *a, uint64_t previous_time, bool midscreen)
 {
     struct timespec ts; 
     timespec_get(&ts, TIME_UTC);
     int64_t delta =  TO_USEC(ts) - previous_time;
-    int64_t to_sleep = 16666 - delta;
+    int64_t to_sleep = 8333 - delta;
     if(to_sleep >= 0) usleep(to_sleep);
             
     timespec_get(&ts, TIME_UTC);
@@ -99,15 +104,15 @@ uint64_t do_frame_action(arcade_t *a, uint64_t previous_time)
     a->cycles_passed = 0;
 
     /* render video memory *before* interrupt */
-    render_frame();
+    render_frame(midscreen);
 
     if(a->interrupt_enabled)
-        trigger_interrupt(a, 2);
+        trigger_interrupt(a, midscreen ? 1 : 2);
     
     return previous_time;
 }
 
-void render_frame() {}
+void render_frame(bool mode) {}
 
 
 void trigger_interrupt(arcade_t *a, size_t num)

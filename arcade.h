@@ -94,5 +94,4 @@ typedef struct arcade {
 } arcade_t;
 
 void setup_arcade(arcade_t *arcade);
-void arcade_context(arcade_t *arcade, char *buf);
 void usage();

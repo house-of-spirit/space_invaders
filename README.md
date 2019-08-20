@@ -23,3 +23,4 @@ As of now, this emulator contains these features:
 - [x] Mid-screen and VBLANK interrupts.
 - [ ] Graphics rendering
 - [ ] Sound
+- [ ] Input Handling

@@ -26,6 +26,9 @@ typedef struct debug_label {
     char *label;   /* Label string */
 } __attribute__ ((packed)) debug_label_t;
 
+#define CODE_SECTION_END 0x1a93
+
+
 typedef struct debug_info {
     size_t symbol_count;
     debug_symbol_t *symbols;
@@ -50,9 +53,11 @@ static const debug_comment_t space_invaders_comments[] = {
 void debug_print_space_invaders_labels();
 void debug_print_space_invaders_symbols();
 
-const debug_label_t *debug_addr_get_label(uint16_t PC);
+const debug_label_t *debug_addr_get_label(uint16_t address);
 const debug_label_t *debug_string_get_label(char *label_string);
 
+const debug_symbol_t *debug_addr_get_symbol(uint16_t address);
+const debug_symbol_t *debug_string_get_symbol(char *symbol_string);
 
 typedef struct function_interval {
     uint16_t begin;
