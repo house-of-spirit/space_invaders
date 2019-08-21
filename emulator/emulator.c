@@ -103,7 +103,7 @@ uint64_t do_frame_action(arcade_t *a, uint64_t previous_time, bool midscreen)
 
     a->cycles_passed = 0;
 
-    /* render video memory *before* interrupt */
+    /* render video memory *before* interrupt service routine*/
     render_frame(midscreen);
 
     if(a->interrupt_enabled)
